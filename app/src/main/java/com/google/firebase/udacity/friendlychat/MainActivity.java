@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+//Regarding the above statement, Justin Hull has edited this code for educational purposes and believes
+//that this reproduction does not violate the license agreement
 
 //removing authorization
 
@@ -36,10 +38,10 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.auth.api.Auth;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+//import com.firebase.ui.auth.AuthUI;
+//import com.google.android.gms.auth.api.Auth;
+//import com.google.firebase.auth.FirebaseAuth;
+//import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -70,11 +72,14 @@ public class MainActivity extends AppCompatActivity {
 
     private String mUsername;
 
+
+    //Firebase instance variables
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mMessagesDatabaseReference;
     private ChildEventListener mChildEventListener;
-    private FirebaseAuth mFirebaseAuth;
-    private FirebaseAuth.AuthStateListener mAuthStateListener;
+    //only used for authorization - which was removed
+    //private FirebaseAuth mFirebaseAuth;
+    //private FirebaseAuth.AuthStateListener mAuthStateListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
 
         mFirebaseDatabase = FirebaseDatabase.getInstance();
 
-        mFirebaseAuth = FirebaseAuth.getInstance();
+        //mFirebaseAuth = FirebaseAuth.getInstance();
 
         mMessagesDatabaseReference = mFirebaseDatabase.getReference().child("messages");
 
@@ -160,9 +165,33 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //mMessagesDatabaseReference.addChildEventListener(mChildEventListener);
+        //private void attachDatabaseReadListener() {
+            if (mChildEventListener == null) {
+                mChildEventListener = new ChildEventListener() {
+                    @Override
+                    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                        FriendlyMessage friendlyMessage = dataSnapshot.getValue(FriendlyMessage.class);
+                        mMessageAdapter.add(friendlyMessage);
+                    }
 
-        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+                    @Override
+                    public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
+
+                    @Override
+                    public void onChildRemoved(DataSnapshot dataSnapshot) {}
+
+                    @Override
+                    public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {}
+                };
+                mMessagesDatabaseReference.addChildEventListener(mChildEventListener);
+            }
+
+        mMessagesDatabaseReference.addChildEventListener(mChildEventListener);
+
+        /*mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
@@ -188,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
                             RC_SIGN_IN);
                 }
             }
-        };
+        };*/
     }
 
     @Override
@@ -212,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    @Override
+    /*@Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.sign_out_menu:
@@ -222,14 +251,14 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
+    }*/
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (mAuthStateListener == null) {
+        /*if (mAuthStateListener == null) {
             mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
-        }
+        }*/
         detatchDatabaseListener();
         mMessageAdapter.clear();
 
@@ -242,18 +271,18 @@ public class MainActivity extends AppCompatActivity {
 
         /*if (mAuthStateListener != null) {
             mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
-        }
+        }*/
         mMessageAdapter.clear();
-        detatchDatabaseListener();*/
+        detatchDatabaseListener();
 
-        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+        //mFirebaseAuth.addAuthStateListener(mAuthStateListener);
     }
 
-    private void onSignedInInitialize(String username) {
+    /*private void onSignedInInitialize(String username) {
         mUsername = username;
         attachDatabaseReadListener();
 
-    }
+    }*/
 
     private void onSignedOutCleanup() {
         mUsername = ANONYMOUS;
@@ -261,29 +290,7 @@ public class MainActivity extends AppCompatActivity {
         detatchDatabaseListener();
     }
 
-    private void attachDatabaseReadListener() {
-        if (mChildEventListener == null) {
-        mChildEventListener = new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                FriendlyMessage friendlyMessage = dataSnapshot.getValue(FriendlyMessage.class);
-                mMessageAdapter.add(friendlyMessage);
-            }
 
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {}
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {}
-        };
-            mMessagesDatabaseReference.addChildEventListener(mChildEventListener);
-    }}
 
     private void detatchDatabaseListener() {
         if (mChildEventListener != null) {
